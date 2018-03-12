@@ -7,28 +7,24 @@
 
 #include "pthread.h"
 
-#define BINLOG_DIR "/home/qspace/data/binlog/" 
+#define BINLOG_DIR "/tmp/" 
 
 #define BINLOG_VERSION 1
 #define BINLOG_KEEP_DAy  7
 
 using namespace std;
 
-namespace bfbinlog{
-
 #pragma pack(push) 
 #pragma pack(1)
 
 typedef struct _Key
 {
-    uint32_t iUserUin;
-    uint32_t iExpId;
-    uint32_t iMetricsId;
+    uint32_t     len;
+    std::string  buff;
 
     string ToString()
     {
-        string sKey = std::to_string(iUserUin) + "_" + std::to_string(iExpId) + "_" + std::to_string(iMetricsId);
-        return sKey;
+        return buff;
     }
 
 }Key;
@@ -40,9 +36,7 @@ typedef struct _BinLogItem
 
     string ToString()
     {
-        char pcStr[1024] ={0};
-        snprintf(pcStr, sizeof(pcStr), "pos %u useruin %u expid %u metricsid %u", iPos, tKey.iUserUin, tKey.iExpId, tKey.iMetricsId);
-        return string(pcStr);
+        return "pos " + std::to_string(iPos) + " buff " + tKey.buff;
     }
 
 }BinLogItem;
@@ -77,9 +71,9 @@ public :
 
     bool SwitchBinLog( uint32_t iBinLogId );
 
-    int ReadFromHead( );
+    int ReadFromHead();
 
-    void GrepAppMsg( uint32_t iBizUin, uint32_t iAppMsgId );
+    void GrepItem(const string& sKey);
 
     bool Write(const char *buf, uint32_t write_len);
     bool Read(char *buf, uint32_t read_len);
@@ -100,6 +94,4 @@ private:
     int m_iRWMode;
     pthread_mutex_t mutex;  
 };
-
-}
 
